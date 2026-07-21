@@ -32,8 +32,6 @@
       -webkit-user-select: none;
       -webkit-text-stroke: 0.5px currentColor;
     }
-    #mascot-fill { position: relative; z-index: 0; color: #6ee7b7; }
-    #mascot { position: relative; z-index: 1; margin-top: -129px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
     #mascot-bg {
       position: absolute;
       z-index: -1;
@@ -47,6 +45,7 @@
       transform: translate(-50%, -50%);
       margin-top: -56px;
     }
+    #mascot { position: relative; z-index: 1; margin-top: -129px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
     .c { color: #6ee7b7; } .b { color: #93c5fd; } .y { color: #fde047; }
     .r { color: #fca5a5; } .g { color: #4ade80; }
   </style>
@@ -54,7 +53,6 @@
 <body>
   <div id="mascot-wrap">
     <div id="mascot-bg"></div>
-    <pre id="mascot-fill" class="mascot-layer"></pre>
     <pre id="mascot" class="mascot-layer"></pre>
   </div>
   <script>
@@ -153,7 +151,6 @@
     const DRAG_THRESHOLD = 5;
 
     const mascotEl = document.getElementById('mascot');
-    const fillEl = document.getElementById('mascot-fill');
     const wrapEl = document.getElementById('mascot-wrap');
     const { invoke } = window.__TAURI__.core;
 
@@ -167,8 +164,6 @@
       // Always decay towards center so mascot doesn't drift away
       posX *= 0.9;
       posY *= 0.9;
-      fillEl.textContent = getFillFrame();
-      fillEl.style.color = cfg.fill;
       mascotEl.innerHTML = COLORED[currentState][fi];
       wrapEl.style.transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px))`;
     }

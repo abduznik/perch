@@ -90,12 +90,17 @@ pub fn run() {
             log::info!("Window created: label={}, visible={}", window.label(), window.is_visible().unwrap_or(false));
             position_overlay(&window)?;
             tray::setup_tray(app)?;
-            // Rebuild tray menu with correct initial label (window is visible)
-            if let Some(tray) = app.tray_by_id("perch") {
-                if let Ok(menu) = tray::build_menu(app.handle(), "Hide") {
-                    let _ = tray.set_menu(Some(menu));
+
+            // Delay tray menu rebuild to ensure window is fully visible
+            let app_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+                if let Some(tray) = app_handle.tray_by_id("perch") {
+                    if let Ok(menu) = tray::build_menu(&app_handle, "Hide") {
+                        let _ = tray.set_menu(Some(menu));
+                    }
                 }
-            }
+            });
             tray::hide_dock_icon();
 
             let conf = config::AppConfig::load();
