@@ -83,36 +83,14 @@ pub fn run() {
                 .transparent(true)
                 .always_on_top(true)
                 .skip_taskbar(true)
-                .visible(true)
+                .visible(false)  // hidden by default — show via tray
                 .accept_first_mouse(true)
                 .build()?;
 
-            log::info!("Window created: label={}, visible={}", window.label(), window.is_visible().unwrap_or(false));
+            log::info!("Window created: label={}", window.label());
             position_overlay(&window)?;
-
-            // Show and focus on startup
-            tray::activate_app();
-            let _ = window.unminimize();
-            let _ = window.show();
-            let _ = window.set_focus();
-
-            // Delay tray menu rebuild
-            let app_handle = app.handle().clone();
             tray::setup_tray(app)?;
-            // DON'T hide dock icon — macOS accessory mode keeps hiding the window.
-            // Keeping Regular policy so the window stays visible.
-            // tray::hide_dock_icon();
-
-            // Delay tray menu rebuild to ensure window is fully visible
-            let app_handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                tokio::time::sleep(std::time::Duration::from_millis(200)).await;
-                if let Some(tray) = app_handle.tray_by_id("perch") {
-                    if let Ok(menu) = tray::build_menu(&app_handle, "Hide") {
-                        let _ = tray.set_menu(Some(menu));
-                    }
-                }
-            });
+            tray::hide_dock_icon();
 
             let conf = config::AppConfig::load();
             if conf.source() == config::EventSource::Plugin { plugin_installer::install_plugin(); }
