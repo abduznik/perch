@@ -33,12 +33,12 @@ jobs:
 
       - name: Create release archive
         run: |
-          cd src-tauri/target/universal-apple-darwin/release/bundle/macos
-          tar -czf ../../../Perch-${{ github.ref_name }}-macos-universal.tar.gz *.app
+          cd src-tauri/target/universal-apple-darwin/release/bundle
+          tar -czf ../../../Perch-${{ github.ref_name }}-macos.tar.gz macos/Perch.app
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: src-tauri/target/universal-apple-darwin/release/bundle/macos/Perch-${{ github.ref_name }}-macos-universal.tar.gz
+          files: src-tauri/target/Perch-${{ github.ref_name }}-macos.tar.gz
           draft: false
           generate_release_notes: true
