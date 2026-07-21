@@ -22,25 +22,26 @@
     #mascot-wrap.dragging { cursor: grabbing; }
     .mascot-layer {
       font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
-      font-size: 14px;
-      font-weight: bold;
+      font-size: 16px;
+      font-weight: 900;
       line-height: 1.15;
-      letter-spacing: 0;
+      letter-spacing: 1px;
       white-space: pre;
       text-align: left;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-text-stroke: 0.5px currentColor;
     }
     #mascot-fill { position: relative; z-index: 0; color: #6ee7b7; }
-    #mascot { position: relative; z-index: 1; margin-top: -113px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
+    #mascot { position: relative; z-index: 1; margin-top: -129px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
     #mascot-bg {
       position: absolute;
       z-index: -1;
       background: rgba(15, 23, 42, 0.85);
       border-radius: 12px;
       pointer-events: none;
-      width: 180px;
-      height: 130px;
+      width: 200px;
+      height: 145px;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
