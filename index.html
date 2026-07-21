@@ -33,12 +33,26 @@
     }
     #mascot-fill { position: relative; z-index: 0; color: #6ee7b7; }
     #mascot { position: relative; z-index: 1; margin-top: -113px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
+    #mascot-bg {
+      position: absolute;
+      z-index: -1;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 12px;
+      pointer-events: none;
+      width: 180px;
+      height: 130px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin-top: -56px;
+    }
     .c { color: #6ee7b7; } .b { color: #93c5fd; } .y { color: #fde047; }
     .r { color: #fca5a5; } .g { color: #4ade80; }
   </style>
 </head>
 <body>
   <div id="mascot-wrap">
+    <div id="mascot-bg"></div>
     <pre id="mascot-fill" class="mascot-layer"></pre>
     <pre id="mascot" class="mascot-layer"></pre>
   </div>
@@ -196,47 +210,52 @@
 
     // ── Mouse interaction: click / hold-to-pop / drag ─────────────────
     let holdTimer = null;
+    let dragActive = false; // true while OS-native drag is in progress
 
     wrapEl.addEventListener('mousedown', (e) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0 || dragActive) return;
       dragStartX = e.clientX;
       dragStartY = e.clientY;
       dragMoved = false;
 
       holdTimer = setTimeout(() => {
-        if (!dragMoved) { triggerReaction('Pop'); holdTimer = null; }
+        if (!dragMoved && !dragActive) { triggerReaction('Pop'); holdTimer = null; }
       }, HOLD_THRESHOLD);
     });
 
     window.addEventListener('mousemove', (e) => {
-      if (dragStartX === 0) return;
+      if (dragStartX === 0 || dragActive) return;
       const dx = e.clientX - dragStartX;
       const dy = e.clientY - dragStartY;
       if (!dragMoved && Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) {
         dragMoved = true;
+        dragActive = true;
         if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
         wrapEl.classList.add('dragging');
-        // Use Tauri's native window drag
-        invoke('start_window_drag').catch(() => {});
+        // startDragAsync will block until user releases mouse
+        invoke('start_window_drag').then(() => {
+          // Drag ended — persist position
+          dragActive = false;
+          wrapEl.classList.remove('dragging');
+          setTimeout(() => {
+            invoke('get_window_position').then(p => {
+              if (p) invoke('save_position', { x: p.x, y: p.y }).catch(() => {});
+            }).catch(() => {});
+          }, 50);
+        }).catch(() => { dragActive = false; });
       }
     });
 
     window.addEventListener('mouseup', (e) => {
       if (e.button !== 0) return;
       if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-      if (dragMoved) {
-        dragMoved = false;
-        dragStartX = 0; dragStartY = 0;
-        wrapEl.classList.remove('dragging');
-        // Persist final position
-        setTimeout(() => {
-          invoke('get_window_position').then(p => {
-            if (p) invoke('save_position', { x: p.x, y: p.y }).catch(() => {});
-          }).catch(() => {});
-        }, 100);
-      } else {
+      // Only trigger petted if no drag was active and no drag happened
+      if (!dragMoved && !dragActive) {
         triggerReaction('Petted');
       }
+      dragStartX = 0;
+      dragStartY = 0;
+      dragMoved = false;
     });
 
     wrapEl.addEventListener('mouseleave', () => {
