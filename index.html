@@ -18,6 +18,7 @@
       left: 50%;
       top: 50%;
       cursor: grab;
+      padding: 20px;
     }
     #mascot-wrap.dragging { cursor: grabbing; }
     .mascot-layer {
@@ -32,19 +33,6 @@
       -webkit-user-select: none;
       -webkit-text-stroke: 0.5px currentColor;
     }
-    #mascot-bg {
-      position: absolute;
-      z-index: -1;
-      background: rgba(15, 23, 42, 0.85);
-      border-radius: 12px;
-      pointer-events: none;
-      width: 200px;
-      height: 145px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      margin-top: -56px;
-    }
     #mascot { position: relative; z-index: 1; margin-top: -129px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
     .c { color: #6ee7b7; } .b { color: #93c5fd; } .y { color: #fde047; }
     .r { color: #fca5a5; } .g { color: #4ade80; }
@@ -52,7 +40,6 @@
 </head>
 <body>
   <div id="mascot-wrap">
-    <div id="mascot-bg"></div>
     <pre id="mascot" class="mascot-layer"></pre>
   </div>
   <script>

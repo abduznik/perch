@@ -89,6 +89,12 @@ pub fn run() {
 
             log::info!("Window created: label={}, visible={}", window.label(), window.is_visible().unwrap_or(false));
             position_overlay(&window)?;
+
+            // Explicitly show and focus the window on startup
+            // (macOS accessory mode needs this — .visible(true) alone doesn't paint)
+            let _ = window.show();
+            let _ = window.set_focus();
+            tray::activate_app();
             tray::setup_tray(app)?;
 
             // Delay tray menu rebuild to ensure window is fully visible

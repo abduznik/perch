@@ -46,8 +46,7 @@ pub fn build_menu(app: &tauri::AppHandle, show_label: &str) -> Result<Menu<tauri
     Ok(menu)
 }
 
-/// Bring the app to the foreground (needed on macOS with accessory activation policy)
-fn activate_app() {
+pub fn activate_app() {
     #[cfg(target_os = "macos")]
     {
         use std::ffi::c_void;
