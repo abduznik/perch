@@ -90,12 +90,18 @@ pub fn run() {
             log::info!("Window created: label={}, visible={}", window.label(), window.is_visible().unwrap_or(false));
             position_overlay(&window)?;
 
-            // Explicitly show and focus the window on startup
-            // (macOS accessory mode needs this — .visible(true) alone doesn't paint)
+            // Show and focus on startup
+            tray::activate_app();
+            let _ = window.unminimize();
             let _ = window.show();
             let _ = window.set_focus();
-            tray::activate_app();
+
+            // Delay tray menu rebuild
+            let app_handle = app.handle().clone();
             tray::setup_tray(app)?;
+            // DON'T hide dock icon — macOS accessory mode keeps hiding the window.
+            // Keeping Regular policy so the window stays visible.
+            // tray::hide_dock_icon();
 
             // Delay tray menu rebuild to ensure window is fully visible
             let app_handle = app.handle().clone();
@@ -107,7 +113,6 @@ pub fn run() {
                     }
                 }
             });
-            tray::hide_dock_icon();
 
             let conf = config::AppConfig::load();
             if conf.source() == config::EventSource::Plugin { plugin_installer::install_plugin(); }
