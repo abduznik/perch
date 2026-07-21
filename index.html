@@ -128,7 +128,6 @@
     const REACTION_COOLDOWN = 800;
     const PETTED_DURATION = 1200;
     const POP_DURATION = 1500;
-    const HOLD_THRESHOLD = 2000;
 
     // Drag state
     let isDragging = false;
@@ -191,19 +190,16 @@
       }, dur);
     }
 
-    // ── Mouse interaction: click / hold-to-pop / drag ─────────────────
-    let holdTimer = null;
-    let dragActive = false; // true while OS-native drag is in progress
+    // ── Mouse interaction: click / multi-click pop / drag ──────────────
+    let clickCount = 0;
+    let clickTimer = null;
+    let dragActive = false;
 
     wrapEl.addEventListener('mousedown', (e) => {
       if (e.button !== 0 || dragActive) return;
       dragStartX = e.clientX;
       dragStartY = e.clientY;
       dragMoved = false;
-
-      holdTimer = setTimeout(() => {
-        if (!dragMoved && !dragActive) { triggerReaction('Pop'); holdTimer = null; }
-      }, HOLD_THRESHOLD);
     });
 
     window.addEventListener('mousemove', (e) => {
@@ -213,11 +209,10 @@
       if (!dragMoved && Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) {
         dragMoved = true;
         dragActive = true;
-        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+        clickCount = 0;
+        if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
         wrapEl.classList.add('dragging');
-        // startDragAsync will block until user releases mouse
         invoke('start_window_drag').then(() => {
-          // Drag ended — persist position
           dragActive = false;
           wrapEl.classList.remove('dragging');
           setTimeout(() => {
@@ -230,19 +225,30 @@
     });
 
     window.addEventListener('mouseup', (e) => {
-      if (e.button !== 0) return;
-      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
-      // Only trigger petted if no drag was active and no drag happened
-      if (!dragMoved && !dragActive) {
-        triggerReaction('Petted');
+      if (e.button !== 0 || dragMoved || dragActive) {
+        dragStartX = 0; dragStartY = 0; dragMoved = false;
+        return;
       }
-      dragStartX = 0;
-      dragStartY = 0;
-      dragMoved = false;
-    });
+      // Quick click — count it
+      clickCount++;
+      if (clickTimer) clearTimeout(clickTimer);
 
-    wrapEl.addEventListener('mouseleave', () => {
-      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      if (clickCount >= 2) {
+        // 2+ rapid clicks = Pop dance
+        clickCount = 0;
+        triggerReaction('Pop');
+      } else {
+        // Single click — wait a bit to see if more clicks come
+        clickTimer = setTimeout(() => {
+          // No more clicks — it was just one click = Petted
+          if (clickCount === 1) {
+            triggerReaction('Petted');
+          }
+          clickCount = 0;
+          clickTimer = null;
+        }, 350);
+      }
+      dragStartX = 0; dragStartY = 0;
     });
 
     // ── Init ──────────────────────────────────────────────────────────
