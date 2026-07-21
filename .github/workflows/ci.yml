@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Cargo check
+        run: cd src-tauri && cargo check
+
+      - name: Cargo test
+        run: cd src-tauri && cargo test
+
+      - name: Cargo clippy
+        run: cd src-tauri && cargo clippy -- -D warnings
+
+      - name: Rustfmt check
+        run: cd src-tauri && cargo fmt --check
+
+      - name: Frontend build
+        run: npm run build

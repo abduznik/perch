@@ -1,5 +1,9 @@
 # Perch
 
+<p align="center">
+  <img src="src-tauri/icons/icon.png" width="128" alt="Perch icon" />
+</p>
+
 A mascot/pet companion that watches [opencode](https://github.com/anomalyco/opencode) coding-agent sessions and notifies you when opencode finishes working and goes idle again.
 
 ## Architecture

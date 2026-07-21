@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Tauri app
+        run: cd src-tauri && cargo tauri build --target universal-apple-darwin
+
+      - name: Create release archive
+        run: |
+          cd src-tauri/target/universal-apple-darwin/release/bundle/macos
+          tar -czf ../../../Perch-${{ github.ref_name }}-macos-universal.tar.gz *.app
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: src-tauri/target/universal-apple-darwin/release/bundle/macos/Perch-${{ github.ref_name }}-macos-universal.tar.gz
+          draft: false
+          generate_release_notes: true
