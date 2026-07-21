@@ -18,6 +18,7 @@ pub enum OpenCodeEvent {
 
 /// Mascot states for the companion
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum MascotState {
     /// Idle - waiting for opencode to start working
     Idle,
@@ -63,6 +64,7 @@ impl StateMachine {
     }
 
     /// Create a state machine with custom minimum working duration
+    #[allow(dead_code)]
     pub fn with_min_duration(min_duration: Duration) -> Self {
         Self {
             current_state: MascotState::Idle,
@@ -133,6 +135,7 @@ impl StateMachine {
     }
 
     /// Get the current state
+    #[allow(dead_code)]
     pub fn current_state(&self) -> MascotState {
         self.current_state
     }

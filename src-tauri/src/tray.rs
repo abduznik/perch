@@ -60,7 +60,7 @@ pub fn activate_app() {
         type MsgSendFnBool = unsafe extern "C" fn(*mut c_void, *mut c_void, bool);
 
         unsafe {
-            let raw_ptr = libc::dlsym(libc::RTLD_DEFAULT, "objc_msgSend\0".as_ptr() as *const _);
+            let raw_ptr = libc::dlsym(libc::RTLD_DEFAULT, c"objc_msgSend".as_ptr() as *const _);
             if raw_ptr.is_null() { return; }
 
             let cls_name = std::ffi::CString::new("NSApplication").unwrap();
@@ -106,16 +106,14 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
             }
         })
         .on_tray_icon_event(|tray, event| {
-            match event {
-                TrayIconEvent::Click {
-                    button: MouseButton::Left,
-                    button_state: MouseButtonState::Up,
-                    ..
-                } => {
-                    log::info!("Tray icon left-clicked");
-                    toggle_window(tray.app_handle());
-                }
-                _ => {}
+            if let TrayIconEvent::Click {
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+                ..
+            } = event
+            {
+                log::info!("Tray icon left-clicked");
+                toggle_window(tray.app_handle());
             }
         })
         .build(app)?;
@@ -139,7 +137,7 @@ pub fn hide_dock_icon() {
         type MsgSendFnI64 = unsafe extern "C" fn(*mut c_void, *mut c_void, i64);
 
         unsafe {
-            let raw_ptr = libc::dlsym(libc::RTLD_DEFAULT, "objc_msgSend\0".as_ptr() as *const _);
+            let raw_ptr = libc::dlsym(libc::RTLD_DEFAULT, c"objc_msgSend".as_ptr() as *const _);
             if raw_ptr.is_null() { return; }
 
             let cls_name = std::ffi::CString::new("NSApplication").unwrap();

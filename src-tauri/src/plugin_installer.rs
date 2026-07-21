@@ -81,7 +81,7 @@ pub fn install_plugin() {
 }
 
 /// Ensure the plugin is registered in opencode.jsonc
-fn ensure_plugin_registered(config_dir: &PathBuf) {
+fn ensure_plugin_registered(config_dir: &std::path::Path) {
     let config_path = config_dir.join("opencode.jsonc");
 
     // Read existing config or create minimal one
@@ -142,8 +142,8 @@ fn ensure_plugin_registered(config_dir: &PathBuf) {
 /// Extract version string from plugin content
 fn extract_version(content: &str) -> Option<String> {
     for line in content.lines() {
-        if line.starts_with(VERSION_MARKER) {
-            return Some(line[VERSION_MARKER.len()..].trim().to_string());
+        if let Some(rest) = line.strip_prefix(VERSION_MARKER) {
+            return Some(rest.trim().to_string());
         }
     }
     None

@@ -16,6 +16,8 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -26,7 +28,7 @@ jobs:
       - name: Install Tauri CLI
         run: cargo install tauri-cli --version "^2"
 
-      - name: Build Tauri app
+      - name: Build Tauri app (universal)
         run: cd src-tauri && cargo tauri build --target universal-apple-darwin
 
       - name: Create release archive

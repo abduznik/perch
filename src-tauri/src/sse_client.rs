@@ -1,5 +1,4 @@
 use futures::StreamExt;
-use reqwest;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter};
 
@@ -118,10 +117,10 @@ async fn connect_and_listen(
                 // Reset for next event
                 current_event_type.clear();
                 current_data.clear();
-            } else if line.starts_with("event:") {
-                current_event_type = line[6..].trim().to_string();
-            } else if line.starts_with("data:") {
-                let data = line[5..].trim().to_string();
+            } else if let Some(rest) = line.strip_prefix("event:") {
+                current_event_type = rest.trim().to_string();
+            } else if let Some(rest) = line.strip_prefix("data:") {
+                let data = rest.trim().to_string();
                 if !current_data.is_empty() {
                     current_data.push('\n');
                 }
