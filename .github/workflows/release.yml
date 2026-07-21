@@ -23,6 +23,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2"
+
       - name: Build Tauri app
         run: cd src-tauri && cargo tauri build --target universal-apple-darwin
 
