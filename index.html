@@ -17,8 +17,6 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      cursor: grab;
-      padding: 5px;
     }
     #mascot-wrap.dragging { cursor: grabbing; }
     .mascot-layer {
@@ -190,12 +188,15 @@
       }, dur);
     }
 
-    // ── Mouse interaction: click / multi-click pop / drag ──────────────
+    // ── Mouse interaction: multi-click pop / drag ──────────────────────
     let clickCount = 0;
     let clickTimer = null;
     let dragActive = false;
+    let requiredClicks = 3 + Math.floor(Math.random() * 6); // 3-8 random
 
-    wrapEl.addEventListener('mousedown', (e) => {
+    mascotEl.style.cursor = 'grab';
+
+    mascotEl.addEventListener('mousedown', (e) => {
       if (e.button !== 0 || dragActive) return;
       dragStartX = e.clientX;
       dragStartY = e.clientY;
@@ -211,16 +212,16 @@
         dragActive = true;
         clickCount = 0;
         if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
-        wrapEl.classList.add('dragging');
+        mascotEl.style.cursor = 'grabbing';
         invoke('start_window_drag').then(() => {
           dragActive = false;
-          wrapEl.classList.remove('dragging');
+          mascotEl.style.cursor = 'grab';
           setTimeout(() => {
             invoke('get_window_position').then(p => {
               if (p) invoke('save_position', { x: p.x, y: p.y }).catch(() => {});
             }).catch(() => {});
           }, 50);
-        }).catch(() => { dragActive = false; });
+        }).catch(() => { dragActive = false; mascotEl.style.cursor = 'grab'; });
       }
     });
 
@@ -229,24 +230,21 @@
         dragStartX = 0; dragStartY = 0; dragMoved = false;
         return;
       }
-      // Quick click — count it
+      // Count rapid clicks
       clickCount++;
       if (clickTimer) clearTimeout(clickTimer);
 
-      if (clickCount >= 2) {
-        // 2+ rapid clicks = Pop dance
+      if (clickCount >= requiredClicks) {
+        // Hit the target — Pop dance!
         clickCount = 0;
+        requiredClicks = 3 + Math.floor(Math.random() * 6); // reset for next time
         triggerReaction('Pop');
       } else {
-        // Single click — wait a bit to see if more clicks come
+        // Wait for more clicks or timeout
         clickTimer = setTimeout(() => {
-          // No more clicks — it was just one click = Petted
-          if (clickCount === 1) {
-            triggerReaction('Petted');
-          }
           clickCount = 0;
           clickTimer = null;
-        }, 350);
+        }, 500);
       }
       dragStartX = 0; dragStartY = 0;
     });
