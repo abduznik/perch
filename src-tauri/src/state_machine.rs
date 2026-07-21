@@ -80,9 +80,9 @@ impl StateMachine {
 
         match event {
             OpenCodeEvent::SessionBusy | OpenCodeEvent::SessionStreaming => {
-                if self.current_state == MascotState::Idle 
-                    || self.current_state == MascotState::Done 
-                    || self.current_state == MascotState::Error 
+                if self.current_state == MascotState::Idle
+                    || self.current_state == MascotState::Done
+                    || self.current_state == MascotState::Error
                 {
                     self.current_state = MascotState::Working;
                     self.working_started = Some(Instant::now());
@@ -92,7 +92,8 @@ impl StateMachine {
             OpenCodeEvent::SessionIdle => {
                 if self.current_state == MascotState::Working {
                     // Check if we were working long enough
-                    let worked_long_enough = self.working_started
+                    let worked_long_enough = self
+                        .working_started
                         .map(|start| start.elapsed() >= self.min_working_duration)
                         .unwrap_or(false);
 
@@ -100,14 +101,16 @@ impl StateMachine {
                         self.current_state = MascotState::Done;
                         log::info!(
                             "State transition: {} -> {} (worked long enough)",
-                            old_state, self.current_state
+                            old_state,
+                            self.current_state
                         );
                     } else {
                         // Short work period, go back to idle without notification
                         self.current_state = MascotState::Idle;
                         log::info!(
                             "State transition: {} -> {} (short work, no notification)",
-                            old_state, self.current_state
+                            old_state,
+                            self.current_state
                         );
                     }
                     self.working_started = None;
@@ -118,7 +121,9 @@ impl StateMachine {
                 self.working_started = None;
                 log::warn!(
                     "State transition: {} -> {} (error: {:?})",
-                    old_state, self.current_state, message
+                    old_state,
+                    self.current_state,
+                    message
                 );
             }
             OpenCodeEvent::Unknown { event_type } => {
@@ -163,10 +168,10 @@ mod tests {
     fn test_working_to_done_after_min_duration() {
         let mut sm = StateMachine::with_min_duration(Duration::from_millis(100));
         sm.process_event(&OpenCodeEvent::SessionBusy);
-        
+
         // Simulate time passing
         std::thread::sleep(Duration::from_millis(150));
-        
+
         let result = sm.process_event(&OpenCodeEvent::SessionIdle);
         assert_eq!(result, Some(MascotState::Done));
     }
@@ -175,7 +180,7 @@ mod tests {
     fn test_working_to_idle_short_duration() {
         let mut sm = StateMachine::with_min_duration(Duration::from_secs(10));
         sm.process_event(&OpenCodeEvent::SessionBusy);
-        
+
         // Immediately go idle (short work period)
         let result = sm.process_event(&OpenCodeEvent::SessionIdle);
         assert_eq!(result, Some(MascotState::Idle));
@@ -184,8 +189,8 @@ mod tests {
     #[test]
     fn test_error_state() {
         let mut sm = StateMachine::new();
-        let result = sm.process_event(&OpenCodeEvent::SessionError { 
-            message: Some("test error".to_string()) 
+        let result = sm.process_event(&OpenCodeEvent::SessionError {
+            message: Some("test error".to_string()),
         });
         assert_eq!(result, Some(MascotState::Error));
     }

@@ -1,7 +1,7 @@
 use tauri::{
-    Manager,
     menu::{Menu, MenuItem, PredefinedMenuItem},
-    tray::{TrayIconBuilder, TrayIconEvent, MouseButton, MouseButtonState},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+    Manager,
 };
 
 /// Toggle window visibility and update tray menu label
@@ -38,7 +38,10 @@ fn toggle_window(app: &tauri::AppHandle) {
     }
 }
 
-pub fn build_menu(app: &tauri::AppHandle, show_label: &str) -> Result<Menu<tauri::Wry>, Box<dyn std::error::Error>> {
+pub fn build_menu(
+    app: &tauri::AppHandle,
+    show_label: &str,
+) -> Result<Menu<tauri::Wry>, Box<dyn std::error::Error>> {
     let show_item = MenuItem::with_id(app, "show", show_label, true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
@@ -61,7 +64,9 @@ pub fn activate_app() {
 
         unsafe {
             let raw_ptr = libc::dlsym(libc::RTLD_DEFAULT, c"objc_msgSend".as_ptr() as *const _);
-            if raw_ptr.is_null() { return; }
+            if raw_ptr.is_null() {
+                return;
+            }
 
             let cls_name = std::ffi::CString::new("NSApplication").unwrap();
             let sel_shared = std::ffi::CString::new("sharedApplication").unwrap();
@@ -90,19 +95,17 @@ pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .menu(&menu)
         .tooltip("Perch - opencode companion")
         .show_menu_on_left_click(true)
-        .on_menu_event(move |app, event| {
-            match event.id().as_ref() {
-                "show" => {
-                    log::info!("Show/Hide toggled");
-                    toggle_window(app);
-                }
-                "quit" => {
-                    log::info!("Quit menu item clicked");
-                    app.exit(0);
-                }
-                _ => {
-                    log::warn!("Unhandled menu event: {}", event.id().as_ref());
-                }
+        .on_menu_event(move |app, event| match event.id().as_ref() {
+            "show" => {
+                log::info!("Show/Hide toggled");
+                toggle_window(app);
+            }
+            "quit" => {
+                log::info!("Quit menu item clicked");
+                app.exit(0);
+            }
+            _ => {
+                log::warn!("Unhandled menu event: {}", event.id().as_ref());
             }
         })
         .on_tray_icon_event(|tray, event| {
@@ -138,7 +141,9 @@ pub fn hide_dock_icon() {
 
         unsafe {
             let raw_ptr = libc::dlsym(libc::RTLD_DEFAULT, c"objc_msgSend".as_ptr() as *const _);
-            if raw_ptr.is_null() { return; }
+            if raw_ptr.is_null() {
+                return;
+            }
 
             let cls_name = std::ffi::CString::new("NSApplication").unwrap();
             let sel_name = std::ffi::CString::new("sharedApplication").unwrap();

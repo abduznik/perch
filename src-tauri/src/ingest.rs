@@ -1,16 +1,10 @@
-use axum::{
-    Router,
-    extract::State,
-    http::StatusCode,
-    routing::post,
-    Json,
-};
+use crate::notifications;
+use crate::state_machine::{OpenCodeEvent, StateMachine};
+use axum::{extract::State, http::StatusCode, routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
-use crate::notifications;
-use crate::state_machine::{OpenCodeEvent, StateMachine};
 
 /// Payload sent by the perch-bridge opencode plugin
 #[derive(Debug, Deserialize)]
@@ -71,7 +65,11 @@ async fn ingest_handler(
     State(state): State<Arc<IngestState>>,
     Json(payload): Json<IngestPayload>,
 ) -> StatusCode {
-    log::debug!("Ingested event: {} (data: {:?})", payload.event, payload.data);
+    log::debug!(
+        "Ingested event: {} (data: {:?})",
+        payload.event,
+        payload.data
+    );
 
     let event = parse_ingest_event(&payload.event, payload.data.as_deref());
 

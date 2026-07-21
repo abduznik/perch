@@ -16,7 +16,10 @@ use std::sync::Mutex;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
 /// Persisted window position
-struct WindowPos { x: f64, y: f64 }
+struct WindowPos {
+    x: f64,
+    y: f64,
+}
 static SAVED_POS: Mutex<Option<WindowPos>> = Mutex::new(None);
 
 #[tauri::command]
@@ -30,8 +33,10 @@ fn start_window_drag(app: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn move_window(app: tauri::AppHandle, x: f64, y: f64) -> Result<(), String> {
     if let Some(w) = app.get_webview_window("main") {
-        w.set_position(tauri::Position::Physical(tauri::PhysicalPosition::new(x as i32, y as i32)))
-            .map_err(|e| e.to_string())?;
+        w.set_position(tauri::Position::Physical(tauri::PhysicalPosition::new(
+            x as i32, y as i32,
+        )))
+        .map_err(|e| e.to_string())?;
     }
     Ok(())
 }
@@ -62,7 +67,9 @@ fn get_saved_position() -> Result<Option<(f64, f64)>, String> {
 
 #[tauri::command]
 fn set_click_through(window: tauri::WebviewWindow, enabled: bool) -> Result<(), String> {
-    window.set_ignore_cursor_events(enabled).map_err(|e| e.to_string())?;
+    window
+        .set_ignore_cursor_events(enabled)
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -75,17 +82,18 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {
-            let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
-                .title("Perch")
-                .inner_size(320.0, 280.0)
-                .resizable(false)
-                .decorations(false)
-                .transparent(true)
-                .always_on_top(true)
-                .skip_taskbar(true)
-                .visible(false)  // hidden by default — show via tray
-                .accept_first_mouse(true)
-                .build()?;
+            let window =
+                WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
+                    .title("Perch")
+                    .inner_size(320.0, 280.0)
+                    .resizable(false)
+                    .decorations(false)
+                    .transparent(true)
+                    .always_on_top(true)
+                    .skip_taskbar(true)
+                    .visible(false) // hidden by default — show via tray
+                    .accept_first_mouse(true)
+                    .build()?;
 
             log::info!("Window created: label={}", window.label());
             position_overlay(&window)?;
@@ -93,13 +101,18 @@ pub fn run() {
             tray::hide_dock_icon();
 
             let conf = config::AppConfig::load();
-            if conf.source() == config::EventSource::Plugin { plugin_installer::install_plugin(); }
+            if conf.source() == config::EventSource::Plugin {
+                plugin_installer::install_plugin();
+            }
 
             let app_handle = app.handle().clone();
             match conf.source() {
                 config::EventSource::Plugin => {
                     let port = conf.ingest_port();
-                    log::info!("Starting ingest server on port {} (plugin bridge mode)", port);
+                    log::info!(
+                        "Starting ingest server on port {} (plugin bridge mode)",
+                        port
+                    );
                     tauri::async_runtime::spawn(async move {
                         if let Err(e) = ingest::run_ingest_server(app_handle, port).await {
                             log::error!("Ingest server error: {}", e);
@@ -120,7 +133,12 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            start_window_drag, move_window, get_window_position, save_position, get_saved_position, set_click_through
+            start_window_drag,
+            move_window,
+            get_window_position,
+            save_position,
+            get_saved_position,
+            set_click_through
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

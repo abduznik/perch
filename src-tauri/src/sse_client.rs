@@ -28,7 +28,10 @@ fn parse_sse_event(event_type: &str, data: &str) -> OpenCodeEvent {
 }
 
 /// Run the SSE event loop, connecting to opencode's event stream
-pub async fn run_event_loop(app: AppHandle, event_url: &str) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+pub async fn run_event_loop(
+    app: AppHandle,
+    event_url: &str,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut state_machine = StateMachine::new();
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(30))

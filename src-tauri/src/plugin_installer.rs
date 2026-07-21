@@ -103,11 +103,8 @@ fn ensure_plugin_registered(config_dir: &std::path::Path) {
 
     let already_registered = plugins
         .map(|arr| {
-            arr.iter().any(|v| {
-                v.as_str()
-                    .map(|s| s == plugin_entry)
-                    .unwrap_or(false)
-            })
+            arr.iter()
+                .any(|v| v.as_str().map(|s| s == plugin_entry).unwrap_or(false))
         })
         .unwrap_or(false);
 

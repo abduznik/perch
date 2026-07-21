@@ -49,8 +49,7 @@ impl AppConfig {
             .map(|s| EventSource::from_str(&s))
             .unwrap_or(EventSource::Plugin);
 
-        let sse_host = env::var("PERCH_HOST")
-            .unwrap_or_else(|_| DEFAULT_SSE_HOST.to_string());
+        let sse_host = env::var("PERCH_HOST").unwrap_or_else(|_| DEFAULT_SSE_HOST.to_string());
 
         let sse_port = env::var("PERCH_PORT")
             .or_else(|_| env::var("OPENCODE_PORT"))
