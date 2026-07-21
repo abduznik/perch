@@ -20,6 +20,14 @@ struct WindowPos { x: f64, y: f64 }
 static SAVED_POS: Mutex<Option<WindowPos>> = Mutex::new(None);
 
 #[tauri::command]
+fn start_window_drag(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(w) = app.get_webview_window("main") {
+        w.start_dragging().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
 fn move_window(app: tauri::AppHandle, x: f64, y: f64) -> Result<(), String> {
     if let Some(w) = app.get_webview_window("main") {
         w.set_position(tauri::Position::Physical(tauri::PhysicalPosition::new(x as i32, y as i32)))
@@ -112,7 +120,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            move_window, get_window_position, save_position, get_saved_position, set_click_through
+            start_window_drag, move_window, get_window_position, save_position, get_saved_position, set_click_through
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

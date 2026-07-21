@@ -196,16 +196,12 @@
 
     // ── Mouse interaction: click / hold-to-pop / drag ─────────────────
     let holdTimer = null;
-    let winPosAtDown = null;
 
     wrapEl.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
       dragStartX = e.clientX;
       dragStartY = e.clientY;
       dragMoved = false;
-      winPosAtDown = null;
-      // Capture window position early so drag has it ready
-      invoke('get_window_position').then(p => { winPosAtDown = p; }).catch(() => {});
 
       holdTimer = setTimeout(() => {
         if (!dragMoved) { triggerReaction('Pop'); holdTimer = null; }
@@ -216,15 +212,12 @@
       if (dragStartX === 0) return;
       const dx = e.clientX - dragStartX;
       const dy = e.clientY - dragStartY;
-      if (!dragMoved && Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD && winPosAtDown) {
+      if (!dragMoved && Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) {
         dragMoved = true;
         if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
         wrapEl.classList.add('dragging');
-        dragOffsetX = winPosAtDown.x - dragStartX;
-        dragOffsetY = winPosAtDown.y - dragStartY;
-      }
-      if (dragMoved) {
-        invoke('move_window', { x: e.clientX + dragOffsetX, y: e.clientY + dragOffsetY }).catch(() => {});
+        // Use Tauri's native window drag
+        invoke('start_window_drag').catch(() => {});
       }
     });
 
@@ -235,9 +228,12 @@
         dragMoved = false;
         dragStartX = 0; dragStartY = 0;
         wrapEl.classList.remove('dragging');
-        invoke('get_window_position').then(p => {
-          if (p) invoke('save_position', { x: p.x, y: p.y }).catch(() => {});
-        }).catch(() => {});
+        // Persist final position
+        setTimeout(() => {
+          invoke('get_window_position').then(p => {
+            if (p) invoke('save_position', { x: p.x, y: p.y }).catch(() => {});
+          }).catch(() => {});
+        }, 100);
       } else {
         triggerReaction('Petted');
       }

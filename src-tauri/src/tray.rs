@@ -83,8 +83,11 @@ fn activate_app() {
 pub fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let menu = build_menu(app.handle(), "Show")?;
 
+    let icon = tauri::image::Image::from_path("icons/tray-icon.png")
+        .unwrap_or_else(|_| app.default_window_icon().unwrap().clone());
+
     let _tray = TrayIconBuilder::with_id("perch")
-        .icon(app.default_window_icon().unwrap().clone())
+        .icon(icon)
         .menu(&menu)
         .tooltip("Perch - opencode companion")
         .show_menu_on_left_click(true)
