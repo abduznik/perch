@@ -38,7 +38,7 @@ fn toggle_window(app: &tauri::AppHandle) {
     }
 }
 
-fn build_menu(app: &tauri::AppHandle, show_label: &str) -> Result<Menu<tauri::Wry>, Box<dyn std::error::Error>> {
+pub fn build_menu(app: &tauri::AppHandle, show_label: &str) -> Result<Menu<tauri::Wry>, Box<dyn std::error::Error>> {
     let show_item = MenuItem::with_id(app, "show", show_label, true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;

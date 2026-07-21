@@ -90,6 +90,12 @@ pub fn run() {
             log::info!("Window created: label={}, visible={}", window.label(), window.is_visible().unwrap_or(false));
             position_overlay(&window)?;
             tray::setup_tray(app)?;
+            // Rebuild tray menu with correct initial label (window is visible)
+            if let Some(tray) = app.tray_by_id("perch") {
+                if let Ok(menu) = tray::build_menu(app.handle(), "Hide") {
+                    let _ = tray.set_menu(Some(menu));
+                }
+            }
             tray::hide_dock_icon();
 
             let conf = config::AppConfig::load();
