@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perch</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background: transparent;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      -webkit-app-region: no-drag;
+    }
+    #mascot-wrap {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+    }
+    .mascot-layer {
+      font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 1.15;
+      letter-spacing: 0;
+      white-space: pre;
+      text-align: left;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #mascot-fill {
+      position: relative;
+      z-index: 0;
+      color: #6ee7b7;
+    }
+    #mascot {
+      position: relative;
+      z-index: 1;
+      margin-top: -113px;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+    }
+    .c { color: #6ee7b7; }
+    .b { color: #93c5fd; }
+    .y { color: #fde047; }
+    .r { color: #fca5a5; }
+    .g { color: #4ade80; }
+  </style>
+</head>
+<body>
+  <div id="mascot-wrap">
+    <pre id="mascot-fill" class="mascot-layer"></pre>
+    <pre id="mascot" class="mascot-layer"></pre>
+  </div>
+  <script>
+    // ── Plain-text frames for fill computation ─────────────────────────
+
+    const PLAIN = {
+      Idle: [
+`     _____      
+   .'     '.    
+  /  o   o  \\   
+ |     __    |  
+  \\________/   
+  /| | | | \\   
+ (  (     )  )  `,
+`     _____      
+   .'     '.    
+  /  o   O  \\   
+ |     __    |  
+  \\________/   
+  /| | | | \\   
+ (  (     )  )  `,
+`     _____      
+   .'     '.    
+  /  O   o  \\   
+ |     __    |  
+  \\________/   
+  /| | | | \\   
+ (  (     )  )  `
+      ],
+      Working: [
+`     _____      
+   .'     '.    
+  /  *   *  \\   
+ |     __    |  
+  \\________/   
+ \\| | | | |/   
+  )( (   ) )(  `,
+`     _____      
+   .'     '.    
+  /  *   *  \\   
+ |     __    |  
+  \\________/   
+  \\| | |  |/    
+  ()(  )()( )   `,
+`     _____      
+   .'     '.    
+  /  *   *  \\   
+ |     __    |  
+  \\________/   
+ /| | | | |\\   
+ ()( ( ) )()()  `,
+`     _____      
+   .'     '.    
+  /  *   *  \\   
+ |     __    |  
+  \\________/   
+  \\| | | | |/   
+  ( )(   )( )   `
+      ],
+      Done: [
+` *   _____   *  
+   .'     '.    
+  /  ^   ^  \\   
+ |    ~~     |  
+  \\________/   
+  /| | | | \\   
+ (  (     )  )  `,
+`     _____      
+ * .'     '. *  
+  /  ^   ^  \\   
+ |    ~~     |  
+  \\________/   
+  /| | | | \\   
+ (  (     )  )  `,
+`  *  _____  *   
+   .'     '.    
+  /  ^   ^  \\   
+ |    ~~     |  
+  \\________/   
+  /| | | | \\   
+ (  (     )  )  `
+      ],
+      Error: [
+`     _____      
+   .'     '.    
+  /  o   o  \\   
+ |     !     |  
+  \\________/   
+  /| | | | \\   
+ (  (     )  )  `,
+`     _____      
+   .'     '.    
+  /  o   o  \\   
+ |     !     |  
+  \\________/   
+  /| | | | \\   
+ ( (  (  )  ) ) `
+      ],
+      Petted: [
+`    .-"""-.     
+   /  ^   ^  \\   
+  |    __    |  
+   \\  \\__/  /   
+    '--'--'     
+   /| | | |\\   
+ (  (     )  )  `,
+`   *.-"""-.*   
+   /  ^   ^  \\   
+  |    __    |  
+   \\  \\__/  /   
+    '--'--'     
+  /| | | | |\\  
+ (  (     )  )  `,
+`    .-"""-.     
+   /  ^   ^  \\   
+  |    __    |  
+   \\  \\__/  /   
+    '--'--'     
+   /| | | |\\   
+ (  (     )  )  `
+      ]
+    };
+
+    // ── Colored frames ────────────────────────────────────────────────
+
+    const IDLE_FRAMES = [
+`<span class="c">     _____      </span>
+<span class="c">   .'     '.    </span>
+<span class="c">  /  <span class="b">o</span>   <span class="b">o</span>  \\   </span>
+<span class="c"> |     __    |  </span>
+<span class="c">  \\________/   </span>
+<span class="c">  /| | | | \\   </span>
+<span class="c"> (  (     )  )  </span>`,
+`<span class="c">     _____      </span>
+<span class="c">   .'     '.    </span>
+<span class="c">  /  <span class="b">o</span>   <span class="b">O</span>  \\   </span>
+<span class="c"> |     __    |  </span>
+<span class="c">  \\________/   </span>
+<span class="c">  /| | | | \\   </span>
+<span class="c"> (  (     )  )  </span>`,
+`<span class="c">     _____      </span>
+<span class="c">   .'     '.    </span>
+<span class="c">  /  <span class="b">O</span>   <span class="b">o</span>  \\   </span>
+<span class="c"> |     __    |  </span>
+<span class="c">  \\________/   </span>
+<span class="c">  /| | | | \\   </span>
+<span class="c"> (  (     )  )  </span>`
+    ];
+
+    const WORKING_FRAMES = [
+`<span class="y">     _____      </span>
+<span class="y">   .'     '.    </span>
+<span class="y">  /  <span class="y">*</span>   <span class="y">*</span>  \\   </span>
+<span class="y"> |     __    |  </span>
+<span class="y">  \\________/   </span>
+<span class="y"> \\| | | | |/   </span>
+<span class="y">  )( (   ) )(  </span>`,
+`<span class="y">     _____      </span>
+<span class="y">   .'     '.    </span>
+<span class="y">  /  <span class="y">*</span>   <span class="y">*</span>  \\   </span>
+<span class="y"> |     __    |  </span>
+<span class="y">  \\________/   </span>
+<span class="y">  \\| | |  |/    </span>
+<span class="y"> ()(  )()( )   </span>`,
+`<span class="y">     _____      </span>
+<span class="y">   .'     '.    </span>
+<span class="y">  /  <span class="y">*</span>   <span class="y">*</span>  \\   </span>
+<span class="y"> |     __    |  </span>
+<span class="y">  \\________/   </span>
+<span class="y"> /| | | | |\\   </span>
+<span class="y"> ()( ( ) )()()  </span>`,
+`<span class="y">     _____      </span>
+<span class="y">   .'     '.    </span>
+<span class="y">  /  <span class="y">*</span>   <span class="y">*</span>  \\   </span>
+<span class="y"> |     __    |  </span>
+<span class="y">  \\________/   </span>
+<span class="y">  \\| | | | |/   </span>
+<span class="y"> ( )(   )( )   </span>`
+    ];
+
+    const DONE_FRAMES = [
+`<span class="g"> *   _____   *  </span>
+<span class="g">   .'     '.    </span>
+<span class="g">  /  <span class="b">^</span>   <span class="b">^</span>  \\   </span>
+<span class="g"> |    ~~     |  </span>
+<span class="g">  \\________/   </span>
+<span class="g">  /| | | | \\   </span>
+<span class="g"> (  (     )  )  </span>`,
+`<span class="g">     _____      </span>
+<span class="g"> * .'     '. *  </span>
+<span class="g">  /  <span class="b">^</span>   <span class="b">^</span>  \\   </span>
+<span class="g"> |    ~~     |  </span>
+<span class="g">  \\________/   </span>
+<span class="g">  /| | | | \\   </span>
+<span class="g"> (  (     )  )  </span>`,
+`<span class="g">  *  _____  *   </span>
+<span class="g">   .'     '.    </span>
+<span class="g">  /  <span class="b">^</span>   <span class="b">^</span>  \\   </span>
+<span class="g"> |    ~~     |  </span>
+<span class="g">  \\________/   </span>
+<span class="g">  /| | | | \\   </span>
+<span class="g"> (  (     )  )  </span>`
+    ];
+
+    const ERROR_FRAMES = [
+`<span class="r">     _____      </span>
+<span class="r">   .'     '.    </span>
+<span class="r">  /  <span class="r">o</span>   <span class="r">o</span>  \\   </span>
+<span class="r"> |     !     |  </span>
+<span class="r">  \\________/   </span>
+<span class="r">  /| | | | \\   </span>
+<span class="r"> (  (     )  )  </span>`,
+`<span class="r">     _____      </span>
+<span class="r">   .'     '.    </span>
+<span class="r">  /  <span class="r">o</span>   <span class="r">o</span>  \\   </span>
+<span class="r"> |     !     |  </span>
+<span class="r">  \\________/   </span>
+<span class="r">  /| | | | \\   </span>
+<span class="r"> ( (  (  )  ) ) </span>`
+    ];
+
+    // Petted: happy wiggle reaction — plays briefly on click
+    const PETTED_FRAMES = [
+`<span class="c">    .-"""-.     </span>
+<span class="c">   /  <span class="b">^</span>   <span class="b">^</span>  \\   </span>
+<span class="c">  |    __    |  </span>
+<span class="c">   \\  \\__/  /   </span>
+<span class="c">    '--'--'     </span>
+<span class="c">   /| | | |\\   </span>
+<span class="c"> (  (     )  )  </span>`,
+`<span class="c">   *.-"""-.*   </span>
+<span class="c">   /  <span class="b">^</span>   <span class="b">^</span>  \\   </span>
+<span class="c">  |    __    |  </span>
+<span class="c">   \\  \\__/  /   </span>
+<span class="c">    '--'--'     </span>
+<span class="c">  /| | | | |\\  </span>
+<span class="c"> (  (     )  )  </span>`,
+`<span class="c">    .-"""-.     </span>
+<span class="c">   /  <span class="b">^</span>   <span class="b">^</span>  \\   </span>
+<span class="c">  |    __    |  </span>
+<span class="c">   \\  \\__/  /   </span>
+<span class="c">    '--'--'     </span>
+<span class="c">   /| | | |\\   </span>
+<span class="c"> (  (     )  )  </span>`
+    ];
+
+    const COLORED = {
+      Idle: IDLE_FRAMES,
+      Working: WORKING_FRAMES,
+      Done: DONE_FRAMES,
+      Error: ERROR_FRAMES,
+      Petted: PETTED_FRAMES,
+    };
+
+    // ── Fill computation ───────────────────────────────────────────────
+    // Flood-fill from borders → find connected "inside" regions → keep regions >= threshold
+
+    const MIN_FILL_REGION_SIZE = 5;
+    let FILL_ENABLED = false;
+
+    function parseGrid(frame) {
+      return frame.split('\n').map(line => [...line]);
+    }
+
+    function isOutline(ch) {
+      return '/\\|_\''.includes(ch) || ch === '.' || ch === '(' || ch === ')' || ch === '<' || ch === '>';
+    }
+
+    function isWall(ch) { return ch !== ' ' && ch !== '\t'; }
+    function isEye(ch) { return 'oO*^'.includes(ch); }
+
+    function floodFillOutside(grid) {
+      const rows = grid.length, cols = grid[0]?.length || 0;
+      const outside = Array.from({length:rows}, () => Array(cols).fill(false));
+      const queue = [];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if ((r===0||r===rows-1||c===0||c===cols-1) && !isWall(grid[r][c])) {
+            outside[r][c] = true; queue.push([r,c]);
+          }
+        }
+      }
+      const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
+      let head = 0;
+      while (head < queue.length) {
+        const [r,c] = queue[head++];
+        for (const [dr,dc] of dirs) {
+          const nr=r+dr, nc=c+dc;
+          if (nr>=0&&nr<rows&&nc>=0&&nc<cols&&!outside[nr][nc]&&!isWall(grid[nr][nc])) {
+            outside[nr][nc] = true; queue.push([nr,nc]);
+          }
+        }
+      }
+      return outside;
+    }
+
+    function findRegions(grid, outside) {
+      const rows = grid.length, cols = grid[0]?.length || 0;
+      const visited = Array.from({length:rows}, () => Array(cols).fill(false));
+      const regions = [];
+      const dirs = [[0,1],[0,-1],[1,0],[-1,0]];
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (!outside[r][c] && !isWall(grid[r][c]) && !isEye(grid[r][c]) && !visited[r][c]) {
+            const region = []; const q = [[r,c]]; visited[r][c] = true; let h = 0;
+            while (h < q.length) {
+              const [cr,cc] = q[h++]; region.push([cr,cc]);
+              for (const [dr,dc] of dirs) {
+                const nr=cr+dr, nc=cc+dc;
+                if (nr>=0&&nr<rows&&nc>=0&&nc<cols&&!outside[nr][nc]&&!isWall(grid[nr][nc])&&!isEye(grid[nr][nc])&&!visited[nr][nc]) {
+                  visited[nr][nc] = true; q.push([nr,nc]);
+                }
+              }
+            }
+            regions.push(region);
+          }
+        }
+      }
+      return regions;
+    }
+
+    function computeFillMask(plainFrame) {
+      if (!FILL_ENABLED) {
+        const grid = parseGrid(plainFrame);
+        return grid.map(() => ' '.repeat(grid[0]?.length || 0)).join('\n');
+      }
+      const grid = parseGrid(plainFrame);
+      const outside = floodFillOutside(grid);
+      const regions = findRegions(grid, outside);
+      const fillSet = new Set();
+      for (const region of regions) {
+        if (region.length >= MIN_FILL_REGION_SIZE) {
+          for (const [r,c] of region) fillSet.add(r+','+c);
+        }
+      }
+      return grid.map((row,r) =>
+        row.map((_,c) => fillSet.has(r+','+c) ? '\u2588' : ' ').join('')
+      ).join('\n');
+    }
+
+    const FILL_CACHE = {};
+    function getFillFrame(plainFrame) {
+      const key = plainFrame;
+      if (!FILL_CACHE[key]) {
+        FILL_CACHE[key] = computeFillMask(plainFrame);
+      }
+      return FILL_CACHE[key];
+    }
+
+    // ── State config ──────────────────────────────────────────────────
+
+    const STATE_CONFIG = {
+      Idle:    { frames: 3, fps: 1.2, dx: [0, 0, 0],      dy: [0, -2, 0],      fill: '#6ee7b7' },
+      Working: { frames: 4, fps: 3.5, dx: [-2, 0, 2, 0],   dy: [0, -2, 0, -2],  fill: '#fde047' },
+      Done:    { frames: 3, fps: 1.5, dx: [0, 0, 0],      dy: [0, -1, 0],      fill: '#4ade80' },
+      Error:   { frames: 2, fps: 1.2, dx: [0, -1],         dy: [0, 0],          fill: '#fca5a5' },
+      Petted:  { frames: 3, fps: 5,   dx: [0, 0, 0],      dy: [-3, 0, -3],     fill: '#6ee7b7' },
+    };
+
+    let currentState = 'Idle';
+    let previousState = 'Idle';  // restored after Petted
+    let frameIndex = 0;
+    let animInterval = null;
+    let posX = 0;
+    let posY = 0;
+
+    // Petted interaction state
+    let pettedTimeout = null;
+    let lastPettedTime = 0;
+    const PETTED_COOLDOWN = 800; // ms — debounce rapid clicks
+    const PETTED_DURATION = 1200; // ms — how long the reaction plays
+
+    const mascotEl = document.getElementById('mascot');
+    const fillEl = document.getElementById('mascot-fill');
+    const wrapEl = document.getElementById('mascot-wrap');
+
+    function renderFrame() {
+      const cfg = STATE_CONFIG[currentState];
+      const fi = frameIndex % cfg.frames;
+
+      posX += cfg.dx[fi] || 0;
+      posY += cfg.dy[fi] || 0;
+      posX = Math.max(-30, Math.min(30, posX));
+      posY = Math.max(-30, Math.min(30, posY));
+      if (currentState === 'Idle') { posX *= 0.9; posY *= 0.9; }
+
+      const plain = PLAIN[currentState][fi];
+      fillEl.textContent = getFillFrame(plain);
+      fillEl.style.color = cfg.fill;
+      mascotEl.innerHTML = COLORED[currentState][fi];
+      wrapEl.style.transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px))`;
+    }
+
+    function startAnimation() {
+      stopAnimation();
+      frameIndex = 0;
+      posX = 0;
+      posY = 0;
+      renderFrame();
+      animInterval = setInterval(() => { frameIndex++; renderFrame(); }, 1000 / STATE_CONFIG[currentState].fps);
+    }
+
+    function stopAnimation() { if (animInterval) { clearInterval(animInterval); animInterval = null; } }
+
+    function setState(newState) {
+      if (newState === currentState) return;
+      console.log(`[Perch] State: ${currentState} -> ${newState}`);
+      currentState = newState;
+      startAnimation();
+    }
+
+    // ── Petted interaction ────────────────────────────────────────────
+
+    function onPetInteraction() {
+      const now = Date.now();
+      if (now - lastPettedTime < PETTED_COOLDOWN) return; // debounce
+      if (currentState === 'Petted') return; // already playing
+      lastPettedTime = now;
+
+      // Save current state so we can restore it
+      previousState = currentState;
+      console.log(`[Perch] Petted! (was ${previousState})`);
+
+      // Switch to Petted
+      currentState = 'Petted';
+      startAnimation();
+
+      // After PETTED_DURATION, restore previous state
+      if (pettedTimeout) clearTimeout(pettedTimeout);
+      pettedTimeout = setTimeout(() => {
+        console.log(`[Perch] Restoring state: ${previousState}`);
+        currentState = previousState;
+        startAnimation();
+        pettedTimeout = null;
+      }, PETTED_DURATION);
+    }
+
+    // ── Click handling ────────────────────────────────────────────────
+
+    wrapEl.addEventListener('click', () => {
+      // DEBUG: visual click indicator
+      document.body.style.outline = '3px solid red';
+      setTimeout(() => { document.body.style.outline = 'none'; }, 300);
+      console.log('[Perch] CLICK RECEIVED');
+      onPetInteraction();
+    });
+
+    // ── Future feature stubs ──────────────────────────────────────────
+
+    function startWandering() {
+      // TODO: Make the pet drift slowly across the screen on a random path
+      // when idle, using gentle easing curves. Should pause near edges.
+    }
+
+    function stopWandering() {
+      // TODO: Stop any active wandering movement and return to center.
+    }
+
+    function playSound(stateOrEvent) {
+      // TODO: Play a subtle sound effect for state transitions
+      // (e.g. soft chirp on Done, quiet buzz on Error).
+    }
+
+    function openPresetEditor() {
+      // TODO: Open a window/panel for choosing mascot presets,
+      // adjusting colors, animation speed, fill toggle, etc.
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────
+
+    async function init() {
+      startAnimation();
+      try {
+        const { listen } = await window.__TAURI__.event;
+        await listen('mascot-state-change', (event) => {
+          const s = event.payload?.state;
+          // Don't interrupt Petted — it will restore automatically
+          if (s && currentState !== 'Petted') {
+            setState(s === 'Attention' ? 'Error' : s);
+          }
+        });
+        console.log('[Perch] Listening for mascot-state-change events');
+      } catch (e) {
+        console.error('[Perch] Failed to listen:', e);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
