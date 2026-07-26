@@ -17,12 +17,28 @@ fn opencode_config_dir() -> Option<PathBuf> {
 
 /// Get the user's config directory cross-platform
 fn dirs() -> Option<PathBuf> {
+    // Linux/macOS: XDG_CONFIG_HOME
     if let Ok(xdg) = std::env::var("XDG_CONFIG_HOME") {
         return Some(PathBuf::from(xdg));
     }
+
+    // Windows: APPDATA
+    #[cfg(target_os = "windows")]
+    if let Ok(appdata) = std::env::var("APPDATA") {
+        return Some(PathBuf::from(appdata));
+    }
+
+    // Linux/macOS fallback: HOME/.config
     if let Ok(home) = std::env::var("HOME") {
         return Some(PathBuf::from(home).join(".config"));
     }
+
+    // Windows fallback: USERPROFILE
+    #[cfg(target_os = "windows")]
+    if let Ok(userprofile) = std::env::var("USERPROFILE") {
+        return Some(PathBuf::from(userprofile).join("AppData").join("Roaming"));
+    }
+
     None
 }
 
