@@ -91,6 +91,12 @@ Download the latest release for your platform from [Releases](https://github.com
 3. Run the `.msi` installer
 4. Launch Perch — it appears in the system tray
 
+### What happens on first launch?
+
+Perch automatically installs the **perch-bridge** plugin into your opencode config (`~/.config/opencode/plugin/perch-bridge.js`) and registers it in `opencode.jsonc`. This plugin forwards opencode session events to Perch so it knows when opencode is working or idle.
+
+No manual setup required — just launch Perch while opencode is installed and it handles the rest.
+
 ## Development
 
 ### Prerequisites
