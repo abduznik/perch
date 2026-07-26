@@ -68,15 +68,13 @@ jobs:
         run: cd src-tauri && cargo tauri build
 
       - name: Create release archive
-        run: |
-          cd src-tauri/target/release/bundle
-          tar -czf ../../../Perch-${{ github.ref_name }}-linux.tar.gz deb/*.deb appimage/*.AppImage rpm/*.rpm
+        run: tar -czf Perch-${{ github.ref_name }}-linux.tar.gz -C src-tauri/target/release/bundle deb appimage rpm
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux
-          path: src-tauri/target/Perch-${{ github.ref_name }}-linux.tar.gz
+          path: Perch-${{ github.ref_name }}-linux.tar.gz
 
   build-windows:
     runs-on: windows-latest
@@ -99,8 +97,7 @@ jobs:
         run: cd src-tauri && cargo tauri build
 
       - name: Create release archive
-        run: |
-          Compress-Archive -Path src-tauri/target/release/bundle/msi/*.msi -DestinationPath Perch-${{ github.ref_name }}-windows.zip
+        run: Compress-Archive -Path src-tauri/target/release/bundle/msi/* -DestinationPath Perch-${{ github.ref_name }}-windows.zip
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
