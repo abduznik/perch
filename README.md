@@ -243,8 +243,8 @@ perch/
 - [ ] ASCII mascot renderer (overlay window)
 - [ ] Settings store (persistent configuration)
 - [ ] Multiple notification styles
-- [ ] Windows and Linux support
-- [ ] Customizable mascot states
+- [x] Windows and Linux support
+- [ ] Custom pet editor — design your own ASCII mascot, frame by frame (idle, working, done, error)
 - [ ] Sound effects
 
 ## License
