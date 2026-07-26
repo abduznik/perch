@@ -65,13 +65,41 @@ Perch supports two event source modes:
 | `overlay_renderer` | Stub | Future: ASCII mascot renderer |
 | `settings_store` | Stub | Future: Persistent settings via Tauri store |
 
-## Prerequisites
+## Installation
+
+Download the latest release for your platform from [Releases](https://github.com/abduznik/perch/releases/latest):
+
+### macOS
+1. Download `Perch-v0.1.0-macos.tar.gz`
+2. Extract: `tar -xzf Perch-v0.1.0-macos.tar.gz`
+3. Drag `Perch.app` to your Applications folder
+4. Launch Perch — it appears as a system tray icon (menu bar)
+
+> **Note:** On first launch, macOS may block the app. Go to **System Settings > Privacy & Security** and click **Open Anyway**.
+
+### Linux
+1. Download `Perch-v0.1.0-linux.tar.gz`
+2. Extract: `tar -xzf Perch-v0.1.0-linux.tar.gz`
+3. Install using one of:
+   - **Debian/Ubuntu:** `sudo dpkg -i deb/Perch_0.1.0_amd64.deb`
+   - **Fedora/RHEL:** `sudo rpm -i rpm/Perch-0.1.0-1.x86_64.rpm`
+   - **Any distro:** `chmod +x appimage/Perch_0.1.0_amd64.AppImage && ./appimage/Perch_0.1.0_amd64.AppImage`
+
+### Windows
+1. Download `Perch-v0.1.0-windows.zip`
+2. Extract the zip
+3. Run the `.msi` installer
+4. Launch Perch — it appears in the system tray
+
+## Development
+
+### Prerequisites
 
 - [Rust](https://www.rust-lang.org/tools/install) (1.70+)
 - [Node.js](https://nodejs.org/) (18+)
 - [Tauri CLI](https://v2.tauri.app/start/prerequisites/)
 
-## Setup
+### Setup
 
 1. Clone the repository:
    ```bash
@@ -88,8 +116,6 @@ Perch supports two event source modes:
    ```bash
    cargo install tauri-cli --version "^2"
    ```
-
-## Development
 
 ### Running in Dev Mode
 
